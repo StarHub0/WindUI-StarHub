@@ -4,8 +4,6 @@ WindUI Boreal is a fork of the original **WindUI** UI library for Roblox, design
 
 This fork maintains compatibility with the original API and structure while applying refinements, fixes, and visual adjustments.
 
----
-
 ## Credits
 
 WindUI was originally created by **Footagesus**.
