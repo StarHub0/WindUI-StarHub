@@ -4,7 +4,18 @@ local Window = WindUI:CreateWindow({
     Title = "WindUI Boreal",
     Size = UDim2.fromOffset(740, 560),
     Icon = "sparkles",
-    ModernLayout = true
+    ModernLayout = true,
+    Watermark = {
+        Enabled = true,
+        Text = "WindUI Boreal | Example",
+        Opacity = 0.45,
+        Position = "bottom-right", -- top-left/top-center/top-right/center/.../bottom-right
+        Size = 14,
+        Padding = 12,
+        Offset = Vector2.new(0, 0),
+        -- Color = Color3.fromRGB(255, 255, 255), -- optional
+        -- RichText = false, -- optional
+    },
 })
 
 local SidebarLabel = nil
