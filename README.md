@@ -30,6 +30,7 @@ This document covers:
 9. Toggle Keybind
 10. Multi Section (Locked)
 11. Section (Locked)
+12. BottomDragBarEnabled
 
 ## Loader
 
@@ -50,6 +51,8 @@ local Window = WindUI:CreateWindow({
     Folder = "WindUI-Docs",
     Size = UDim2.fromOffset(620, 500),
     Icon = "sparkles",
+    ModernLayout = true,
+    BottomDragBarEnabled = true,
 })
 
 local MainTab = Window:Tab({
@@ -392,7 +395,7 @@ end)
 | `Icon` | `string?` | `nil` | Optional icon |
 | `IconThemed` | `boolean?` | `nil` | Themed icon coloring |
 | `Background` | `string?` | `nil` | Image source |
-| `BackgroundImageTransparency` | `number?` | `nil` | Background image transparency |
+| `BackgroundImageTransparency` | `number?` | `0` | Background image transparency |
 | `Duration` | `number` | `5` | Auto-close seconds |
 | `CanClose` | `boolean` | `true` | Shows close button |
 | `Buttons` | `table[]` | `{}` | Action buttons |
@@ -562,6 +565,11 @@ Accepted video formats:
 ```lua
 Window:SetBackgroundVideo("1234567890")
 Window:SetBackgroundVideo("video:rbxassetid://1234567890")
+
+Window:SetBackgroundImage("rbxassetid://987654321")
+Window:SetBackgroundImageTransparency(0.35)
+
+Window:SetBackgroundTransparency(0.2)
 ```
 
 ## ModernLayout
@@ -590,6 +598,43 @@ local ModernWindow = WindUI:CreateWindow({
 ### Runtime
 
 There is no dedicated runtime `SetModernLayout(...)` method; choose this mode when creating the window.
+
+## BottomDragBarEnabled
+
+Controls the bottom drag handle visibility/behavior on the window.
+
+### CreateWindow Options
+
+| Key | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `BottomDragBarEnabled` | `boolean` | `true` | Main option |
+| `BottomDragEnabled` | `boolean` | `true` | Alias; same behavior |
+
+`BottomDragBarEnabled` is internally treated as:
+
+```lua
+not (Config.BottomDragBarEnabled == false or Config.BottomDragEnabled == false)
+```
+
+### Runtime Method
+
+| Method | Signature | Description |
+| --- | --- | --- |
+| `SetBottomDragBarEnabled` | `Window:SetBottomDragBarEnabled(v)` | Enables/disables bottom drag bar at runtime |
+
+### Example
+
+```lua
+local Window = WindUI:CreateWindow({
+    Title = "Bottom Drag Demo",
+    Folder = "WindUI-BottomDrag",
+    BottomDragBarEnabled = true,
+})
+
+Window:SetBottomDragBarEnabled(false)
+task.wait(0.5)
+Window:SetBottomDragBarEnabled(true)
+```
 
 ## Button Keybind
 
@@ -631,7 +676,7 @@ local BK = MainTab:ButtonKeybind({
 | `Callback` | `function` | empty function |
 | `Value` | `EnumItem \| string` | `"F"` |
 | `CanChange` | `boolean` | `true` |
-| `Size` | `string?` | `nil` |
+| `Size` | `"Small" \| "Default" \| "Large"` | `"Default"` |
 
 ### Methods
 
@@ -832,3 +877,218 @@ Secure:Lock()
 
 1. `LockedTitle` is stored but currently has no built-in lock-label renderer in this section container.
 2. `Open`/`Close` only affect expandable sections (sections with child elements).
+
+## Complete Example (All Documented Elements)
+
+This example includes:
+
+1. `ModernLayout`
+2. `BottomDragBarEnabled`
+3. `Background Video`
+4. `Sidebar Elements`
+5. `Notify with Buttons`
+6. `Divider`
+7. `Button Keybind`
+8. `Toggle Keybind`
+9. `Video Elements`
+10. `Multi Section`
+11. `Multi Section (Locked)`
+12. `Section (Locked)`
+
+All icons used are Lucide icon names.
+
+```lua
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/orialdev/WindUI-Boreal/refs/heads/main/WindUI%20Boreal"))()
+
+local Window = WindUI:CreateWindow({
+    Title = "WindUI Boreal - Complete Example",
+    Author = "README",
+    Folder = "WindUI-Complete-Example",
+    Icon = "sparkles",
+    Size = UDim2.fromOffset(680, 520),
+    ModernLayout = true,
+    BottomDragBarEnabled = true,
+    BackgroundVideo = "1234567890", -- replace with a valid video id/source
+})
+
+Window:SetBottomDragBarEnabled(true)
+Window:SetBackgroundVideo("video:rbxassetid://1234567890") -- replace with valid source
+
+local sideLabel = Window:SideBarLabel({
+    Title = "Navigation",
+    Icon = "table-of-contents",
+})
+
+local sideButton = Window:SideBarButton({
+    Title = "Show Notification",
+    Icon = "bell",
+    Variant = "Secondary",
+    Callback = function()
+        WindUI:Notify({
+            Title = "Sidebar Action",
+            Content = "Notification triggered from sidebar button.",
+            Icon = "bell",
+            Buttons = {
+                {
+                    Title = "Center Window",
+                    Icon = "check",
+                    Variant = "Primary",
+                    Callback = function()
+                        Window:SetToTheCenter()
+                    end,
+                },
+                {
+                    Title = "Close",
+                    Icon = "x",
+                    Variant = "Secondary",
+                    CloseOnClick = true,
+                },
+            },
+        })
+    end,
+})
+
+Window:SideBarSpace({ Columns = 1 })
+Window:SideBarDivider({
+    Title = "Elements",
+    TitleAlignment = "Left",
+})
+
+local MainTab = Window:Tab({
+    Title = "Main",
+    Icon = "home",
+})
+
+MainTab:Divider({
+    Title = "Core Controls",
+    TitleAlignment = "Center",
+    Thickness = 1,
+})
+
+local ActionKeybind = MainTab:ButtonKeybind({
+    Title = "Quick Action",
+    Desc = "Press key or click row",
+    Icon = "square-mouse-pointer",
+    IconThemed = true,
+    Value = "F",
+    Callback = function(trigger)
+        print("ButtonKeybind trigger:", trigger or "MouseClick")
+    end,
+})
+
+local ToggleBind = MainTab:ToggleKeybind({
+    Title = "Combat Toggle",
+    Desc = "Toggle via hotkey",
+    Type = "Toggle",
+    Icon = "toggle-right",
+    Value = false,
+    Keybind = "G",
+    Callback = function(state)
+        print("ToggleKeybind state:", state)
+    end,
+})
+
+local PreviewVideo = MainTab:Video({
+    Video = "1234567890", -- replace with a valid video id/source
+    Height = 180,
+    Looped = true,
+    Playing = true,
+    Volume = 0,
+    Visible = true,
+    Radius = 16,
+})
+
+local Modes = MainTab:MultiSection({
+    Title = "Profiles",
+    Desc = "Unlocked multi section",
+    Icon = "crosshair",
+    Box = true,
+    BoxBorder = true,
+    Opened = true,
+})
+
+local LegitTab = Modes:Tab({
+    Title = "Legit",
+    Desc = "Low profile settings",
+    Icon = "shield-check",
+    Selected = true,
+})
+
+LegitTab:Toggle({
+    Title = "Enabled",
+    Value = true,
+})
+
+local RageTab = Modes:Tab({
+    Title = "Rage",
+    Desc = "Aggressive settings",
+    Icon = "flame",
+})
+
+RageTab:Slider({
+    Title = "FOV",
+    Value = { Min = 10, Max = 300, Default = 90 },
+})
+
+local LockedModes = MainTab:MultiSection({
+    Title = "Locked Profiles",
+    Desc = "Unlock required",
+    Icon = "lock",
+    Box = true,
+    BoxBorder = true,
+    Locked = true,
+    Opened = true,
+})
+
+local LockedTab = LockedModes:Tab({
+    Title = "Preset A",
+    Icon = "shield-check",
+    Selected = true,
+})
+
+LockedTab:Toggle({
+    Title = "Protected Option",
+    Value = true,
+})
+
+local LockedSection = MainTab:Section({
+    Title = "Locked Section",
+    Desc = "Section-level lock example",
+    Icon = "lock",
+    Box = true,
+    BoxBorder = true,
+    Opened = true,
+    Locked = true,
+    LockedTitle = "Unlock to edit",
+})
+
+LockedSection:Toggle({
+    Title = "Protected Toggle",
+    Value = false,
+})
+
+WindUI:Notify({
+    Title = "Setup Complete",
+    Content = "All documented elements have been created.",
+    Icon = "check",
+    Duration = 8,
+    Buttons = {
+        {
+            Title = "Unlock Section",
+            Icon = "lock",
+            Variant = "Primary",
+            CloseOnClick = false,
+            Callback = function()
+                LockedSection:Unlock()
+                LockedModes:Unlock()
+            end,
+        },
+        {
+            Title = "Close",
+            Icon = "x",
+            Variant = "Secondary",
+            CloseOnClick = true,
+        },
+    },
+})
+```
