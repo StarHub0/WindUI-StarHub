@@ -1364,6 +1364,38 @@ NotificationIndex=0,
 Notifications={}
 }
 
+local function NormalizeButtonLayout(h)
+if typeof(h)~="string"then
+return"Auto"
+end
+
+local j=string.lower(h)
+if j=="horizontal"then
+return"Horizontal"
+end
+if j=="vertical"then
+return"Vertical"
+end
+
+return"Auto"
+end
+
+local function ResolveHorizontalAlignment(h)
+if typeof(h)~="string"then
+return Enum.HorizontalAlignment.Right
+end
+
+local j=string.lower(h)
+if j=="left"then
+return Enum.HorizontalAlignment.Left
+end
+if j=="center"then
+return Enum.HorizontalAlignment.Center
+end
+
+return Enum.HorizontalAlignment.Right
+end
+
 function g.Init(h)
 local j={
 Lower=false
@@ -1399,6 +1431,8 @@ return j
 end
 
 function g.New(h)
+h=typeof(h)=="table"and h or{}
+
 local j={
 Title=h.Title or"Notification",
 Content=h.Content or nil,
@@ -1406,9 +1440,15 @@ Icon=h.Icon or nil,
 IconThemed=h.IconThemed,
 Background=h.Background,
 BackgroundImageTransparency=h.BackgroundImageTransparency,
-Duration=h.Duration or 5,
+Duration=h.Duration==nil and 5 or h.Duration,
 Buttons=h.Buttons or{},
 CanClose=h.CanClose~=false,
+ButtonLayout=NormalizeButtonLayout(h.ButtonLayout or h.ButtonsLayout),
+ButtonAlignment=ResolveHorizontalAlignment(h.ButtonAlignment or h.ButtonsAlignment),
+ButtonHeight=typeof(h.ButtonHeight)=="number"and math.max(28,h.ButtonHeight)or 40,
+ButtonPadding=typeof(h.ButtonPadding)=="number"and math.max(0,h.ButtonPadding)or 6,
+ButtonDebounce=h.ButtonDebounce~=false,
+ButtonCooldown=typeof(h.ButtonCooldown)=="number"and math.max(0,h.ButtonCooldown)or 0.12,
 UIElements={},
 Closed=false,
 }
@@ -1416,7 +1456,8 @@ Closed=false,
 
 
 g.NotificationIndex=g.NotificationIndex+1
-g.Notifications[g.NotificationIndex]=j
+j.Index=g.NotificationIndex
+g.Notifications[j.Index]=j
 
 
 
@@ -1557,76 +1598,246 @@ end
 
 local u
 local v
-if j.Buttons and#j.Buttons>0 then
 local x={}
-local z=d("UIListLayout",{
-Padding=UDim.new(0,6),
+if j.Buttons and#j.Buttons>0 then
+local z={}
+local A=0
+local B=d("UIListLayout",{
+Padding=UDim.new(0,j.ButtonPadding),
 FillDirection="Horizontal",
-HorizontalAlignment="Right",
+HorizontalAlignment=j.ButtonAlignment,
 VerticalAlignment="Center",
 })
 
 u=d("Frame",{
-Size=UDim2.new(1,0,0,40),
+Size=UDim2.new(1,0,0,j.ButtonHeight),
 BackgroundTransparency=1,
 AutomaticSize="None",
 LayoutOrder=3,
 Parent=r,
 },{
-z,
+B,
 })
 
-for A,B in next,j.Buttons do
-local C=B.Callback
-local F=B.CloseOnClick~=false
-local G=f(
-B.Title,
-B.Icon,
-function()
-if C then
-C()
-end
-if F then
+local function CloseFromButton(C)
+if typeof(C)=="number"and C>0 then
+task.delay(C,function()
+if not j.Closed then
 j:Close()
 end
-end,
-B.Variant,
+end)
+else
+j:Close()
+end
+end
+
+local function ApplyHorizontalLayout()
+B.FillDirection=Enum.FillDirection.Horizontal
+B.HorizontalAlignment=j.ButtonAlignment
+B.VerticalAlignment=Enum.VerticalAlignment.Center
+u.Size=UDim2.new(1,0,0,j.ButtonHeight)
+u.AutomaticSize=Enum.AutomaticSize.None
+
+for C,F in ipairs(z)do
+local G=F.ButtonFrame
+if F.Width then
+G.Size=UDim2.new(0,F.Width,1,0)
+G.AutomaticSize=Enum.AutomaticSize.None
+else
+G.Size=UDim2.new(0,0,1,0)
+G.AutomaticSize=Enum.AutomaticSize.X
+end
+end
+end
+
+local function ApplyVerticalLayout()
+B.FillDirection=Enum.FillDirection.Vertical
+B.HorizontalAlignment=j.ButtonAlignment
+B.VerticalAlignment=Enum.VerticalAlignment.Top
+u.AutomaticSize=Enum.AutomaticSize.Y
+
+for C,F in ipairs(z)do
+local G=F.ButtonFrame
+G.Size=UDim2.new(1,0,0,F.Height)
+G.AutomaticSize=Enum.AutomaticSize.None
+end
+end
+
+for C,F in next,j.Buttons do
+if typeof(F)~="table"then
+F={
+Title=tostring(F),
+}
+end
+
+local G={
+Index=C,
+Callback=F.Callback,
+CloseOnClick=F.CloseOnClick~=false,
+CloseDelay=typeof(F.CloseDelay)=="number"and math.max(0,F.CloseDelay)or 0,
+CloseBeforeCallback=F.CloseBeforeCallback==true,
+Debounce=F.Debounce==nil and j.ButtonDebounce or F.Debounce==true,
+Cooldown=typeof(F.Cooldown)=="number"and math.max(0,F.Cooldown)or j.ButtonCooldown,
+Disabled=F.Disabled==true,
+Busy=false,
+Width=typeof(F.Width)=="number"and math.max(0,F.Width)or nil,
+Height=typeof(F.Height)=="number"and math.max(28,F.Height)or j.ButtonHeight,
+Visible=F.Visible~=false,
+RunAsync=(F.RunAsync==nil and F.Async==nil)or(F.RunAsync~=false and F.Async~=false),
+}
+
+local H
+
+local function UpdateState()
+local J=not j.Closed and G.Visible and not G.Disabled and not G.Busy
+local L=G.ButtonFrame:FindFirstChild"Frame"
+local M=G.ButtonFrame:FindFirstChild("TextLabel",true)
+
+G.ButtonFrame.Active=J
+G.ButtonFrame.Selectable=J
+G.ButtonFrame.Visible=G.Visible
+
+if L and L:IsA"ImageLabel"then
+L.ImageTransparency=J and 1 or 0.92
+end
+
+if M and M:IsA"TextLabel"then
+M.TextTransparency=J and 0 or 0.35
+end
+end
+
+local function RunButton()
+if j.Closed or G.Disabled or G.Busy or not G.Visible then
+return
+end
+
+if G.Debounce then
+G.Busy=true
+UpdateState()
+end
+
+local function finish()
+if not G.Debounce then
+return
+end
+
+task.delay(G.Cooldown,function()
+G.Busy=false
+if G.ButtonFrame.Parent~=nil then
+UpdateState()
+end
+end)
+end
+
+local function callbackFlow()
+if G.CloseOnClick and G.CloseBeforeCallback then
+CloseFromButton(G.CloseDelay)
+end
+
+b.SafeCallback(G.Callback,j,H,G.Index)
+
+if G.CloseOnClick and not G.CloseBeforeCallback then
+CloseFromButton(G.CloseDelay)
+end
+
+finish()
+end
+
+if G.RunAsync then
+task.spawn(callbackFlow)
+else
+callbackFlow()
+end
+end
+
+local J=f(
+F.Title or F.Text,
+F.Icon,
+RunButton,
+F.Variant,
 u
 )
-table.insert(x,G)
+J.Visible=G.Visible
+J.LayoutOrder=typeof(F.LayoutOrder)=="number"and F.LayoutOrder or C
+
+G.ButtonFrame=J
+
+H={
+Index=G.Index,
+ButtonFrame=J,
+Click=function()
+RunButton()
+end,
+SetDisabled=function(L,M)
+G.Disabled=M==true
+UpdateState()
+end,
+SetVisible=function(L,M)
+G.Visible=M~=false
+UpdateState()
+if v then
+v()
+end
+end,
+SetTitle=function(L,M)
+local N=J:FindFirstChild("TextLabel",true)
+if N and N:IsA"TextLabel"then
+N.Text=tostring(M or"Button")
+if v then
+v()
+end
+end
+end
+}
+
+UpdateState()
+table.insert(x,H)
+table.insert(z,G)
+
+b.AddSignal(J:GetPropertyChangedSignal"AbsoluteSize",function()
+if v then
+v()
+end
+end)
 end
 
 v=function()
-z.FillDirection=Enum.FillDirection.Horizontal
-z.HorizontalAlignment=Enum.HorizontalAlignment.Right
-z.VerticalAlignment=Enum.VerticalAlignment.Center
-u.AutomaticSize=Enum.AutomaticSize.None
-
-for A,B in ipairs(x)do
-B.Size=UDim2.new(0,0,1,0)
-B.AutomaticSize=Enum.AutomaticSize.X
+if j.Closed or u.Parent==nil then
+return
 end
 
-task.wait()
+A=A+1
+local C=A
 
-local A=z.AbsoluteContentSize.X
-local B=u.AbsoluteSize.X
-if A>B then
-z.FillDirection=Enum.FillDirection.Vertical
-z.HorizontalAlignment=Enum.HorizontalAlignment.Right
-z.VerticalAlignment=Enum.VerticalAlignment.Center
-u.AutomaticSize=Enum.AutomaticSize.Y
-
-for C,F in ipairs(x)do
-F.Size=UDim2.new(1,0,0,40)
-F.AutomaticSize=Enum.AutomaticSize.None
-end
-end
-end
+if j.ButtonLayout=="Vertical"then
+ApplyVerticalLayout()
+return
 end
 
+ApplyHorizontalLayout()
+if j.ButtonLayout=="Horizontal"then
+return
+end
 
-local x=b.NewRoundFrame(g.UICorner,"Squircle",{
+task.defer(function()
+if C~=A then
+return
+end
+if j.Closed or u.Parent==nil then
+return
+end
+
+local F=B.AbsoluteContentSize.X
+local G=u.AbsoluteSize.X
+if F>G then
+ApplyVerticalLayout()
+end
+end)
+end
+end
+
+
+local z=b.NewRoundFrame(g.UICorner,"Squircle",{
 Size=UDim2.new(1,0,0,0),
 Position=UDim2.new(2,0,1,0),
 AnchorPoint=Vector2.new(0,1),
@@ -1680,50 +1891,84 @@ r,
 l,m,
 })
 
-local z=d("Frame",{
+local A=d("Frame",{
 BackgroundTransparency=1,
 Size=UDim2.new(1,0,0,0),
 Parent=h.Holder
 },{
-x
+z
 })
+
+j.UIElements.Main=z
+j.UIElements.MainContainer=A
+j.UIElements.TextContainer=r
+j.UIElements.ButtonsContainer=u
+j.UIElements.Buttons=x
+j.UIElements.CloseButton=m
+j.UIElements.Duration=p
+j.UIElements.Icon=l
 
 if v and u then
 b.AddSignal(u:GetPropertyChangedSignal"AbsoluteSize",v)
+b.AddSignal(r:GetPropertyChangedSignal"AbsoluteSize",v)
+local B=u:FindFirstChildOfClass"UIListLayout"
+if B then
+b.AddSignal(B:GetPropertyChangedSignal"AbsoluteContentSize",v)
+end
 task.defer(v)
 end
 
-function j.Close(A)
+function j.Close(B)
 if not j.Closed then
 j.Closed=true
-e(z,0.45,{Size=UDim2.new(1,0,0,-8)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-e(x,0.55,{Position=UDim2.new(2,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+g.Notifications[j.Index]=nil
+
+for C,F in ipairs(x)do
+if F.SetDisabled then
+F:SetDisabled(true)
+end
+end
+
+e(A,0.45,{Size=UDim2.new(1,0,0,-8)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+e(z,0.55,{Position=UDim2.new(2,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
 task.wait(.45)
-z:Destroy()
+if A.Parent~=nil then
+A:Destroy()
+end
 end
 end
 
 task.spawn(function()
 task.wait()
-e(z,0.45,{Size=UDim2.new(
+if j.Closed or A.Parent==nil then
+return
+end
+e(A,0.45,{Size=UDim2.new(
 1,
 0,
 0,
-x.AbsoluteSize.Y
+z.AbsoluteSize.Y
 )},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-e(x,0.45,{Position=UDim2.new(0,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
-if j.Duration then
-p.Size=UDim2.new(0,x.DurationFrame.AbsoluteSize.X,1,0)
-e(x.DurationFrame.Frame,j.Duration,{Size=UDim2.new(0,0,1,0)},Enum.EasingStyle.Linear,Enum.EasingDirection.InOut):Play()
+e(z,0.45,{Position=UDim2.new(0,0,1,0)},Enum.EasingStyle.Quint,Enum.EasingDirection.Out):Play()
+if j.Duration and not j.Closed then
+p.Size=UDim2.new(0,z.DurationFrame.AbsoluteSize.X,1,0)
+e(z.DurationFrame.Frame,j.Duration,{Size=UDim2.new(0,0,1,0)},Enum.EasingStyle.Linear,Enum.EasingDirection.InOut):Play()
 task.wait(j.Duration)
+if not j.Closed then
 j:Close()
+end
 end
 end)
 
 if m then
+b.AddSignal(m.MouseButton1Click,function()
+j:Close()
+end)
+if m:FindFirstChild"TextButton"then
 b.AddSignal(m.TextButton.MouseButton1Click,function()
 j:Close()
 end)
+end
 end
 
 
