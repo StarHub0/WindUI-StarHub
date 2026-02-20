@@ -3476,39 +3476,6 @@ d.Heartbeat
 					local b = false
 					local d = ae("Get key", "key", nil, "Secondary", ay.Frame)
 
-					local f = ab.NewRoundFrame(99, "Squircle", {
-						Size = UDim2.new(0, 1, 1, 0),
-						ThemeTag = {
-							ImageColor3 = "Text",
-						},
-						ImageTransparency = 0.9,
-					})
-
-					ac("Frame", {
-						BackgroundTransparency = 1,
-						Size = UDim2.new(0, 0, 1, 0),
-						AutomaticSize = "X",
-						Parent = d.Frame,
-					}, {
-						f,
-						ac("UIPadding", {
-							PaddingLeft = UDim.new(0, 5),
-							PaddingRight = UDim.new(0, 5),
-						}),
-					})
-
-					local g = ab.Image("chevron-down", "chevron-down", 0, "Temp", "KeySystem", true)
-
-					g.Size = UDim2.new(1, 0, 1, 0)
-
-					ac("Frame", {
-						Size = UDim2.new(0, 21, 0, 21),
-						Parent = d.Frame,
-						BackgroundTransparency = 1,
-					}, {
-						g,
-					})
-
 					local h = ab.NewRoundFrame(15, "Squircle", {
 						Size = UDim2.new(1, 0, 0, 0),
 						AutomaticSize = "Y",
@@ -3540,7 +3507,7 @@ d.Heartbeat
 					})
 
 					ac("TextLabel", {
-						Text = "Select Service",
+						Text = "Get key",
 						BackgroundTransparency = 1,
 						FontFace = Font.new(ab.Font, Enum.FontWeight.Medium),
 						ThemeTag = { TextColor3 = "Text" },
@@ -3560,7 +3527,8 @@ d.Heartbeat
 						}),
 					})
 
-					for l, m in next, ah.KeySystem.API do
+					local m = ah.KeySystem.API[1]
+					if m then
 						local p = ah.WindUI.Services[m.Type]
 						if p then
 							local r = {}
@@ -3568,12 +3536,12 @@ d.Heartbeat
 								table.insert(r, m[v])
 							end
 
-							local u = p.New(table.unpack(r))
-							u.Type = m.Type
-							table.insert(an, u)
+							local service = p.New(table.unpack(r))
+							service.Type = m.Type
+							table.insert(an, service)
 
-							local v = m.Icon or p.Icon or "user"
-							local x = ab.Image(v, v, 0, "Temp", "KeySystem", true)
+							local icon = m.Icon or p.Icon or "user"
+							local x = ab.Image(icon, icon, 0, "Temp", "KeySystem", true)
 							x.Size = UDim2.new(0, 24, 0, 24)
 
 							local z = ab.NewRoundFrame(10, "Squircle", {
@@ -3636,11 +3604,13 @@ d.Heartbeat
 							ab.AddSignal(z.MouseEnter, function()
 								ad(z, 0.08, { ImageTransparency = 0.95 }):Play()
 							end)
+
 							ab.AddSignal(z.InputEnded, function()
 								ad(z, 0.08, { ImageTransparency = 1 }):Play()
 							end)
+
 							ab.AddSignal(z.MouseButton1Click, function()
-								u.Copy()
+								service.Copy()
 								ah.WindUI:Notify({
 									Title = "Key System",
 									Content = "Key link copied to clipboard.",
@@ -3650,6 +3620,7 @@ d.Heartbeat
 						end
 					end
 
+					-- abre/fecha (mantido, mas agora só existe um item)
 					ab.AddSignal(d.MouseButton1Click, function()
 						if not b then
 							ad(
@@ -3659,7 +3630,6 @@ d.Heartbeat
 								Enum.EasingStyle.Quint,
 								Enum.EasingDirection.Out
 							):Play()
-							ad(g, 0.3, { Rotation = 180 }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
 						else
 							ad(
 								j,
@@ -3668,7 +3638,6 @@ d.Heartbeat
 								Enum.EasingStyle.Quint,
 								Enum.EasingDirection.Out
 							):Play()
-							ad(g, 0.25, { Rotation = 0 }, Enum.EasingStyle.Quint, Enum.EasingDirection.Out):Play()
 						end
 						b = not b
 					end)
