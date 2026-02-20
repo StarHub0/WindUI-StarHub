@@ -4519,6 +4519,28 @@ _color=ae.Color,
 _titleColor=ae.TitleColor,
 }
 
+local function getAbsoluteScale(al)
+local am=1
+local an=al
+
+while an do
+local ao=an:FindFirstChildOfClass"UIScale"
+if ao then
+local ap=tonumber(ao.Scale)or 1
+if ap>0 then
+am=am*ap
+end
+end
+an=an.Parent
+end
+
+return am>0 and am or 1
+end
+
+local function toLayoutOffset(al)
+return al/getAbsoluteScale(ag)
+end
+
 local function clearThemeProperty(al,am)
 local an=aa.Objects and aa.Objects[al]
 if an and an.Properties then
@@ -4587,8 +4609,9 @@ return
 end
 
 local am=ak._title~=nil and tostring(ak._title)~=""
-local an=am and 20 or 7
-ag.Size=UDim2.new(1,-7,0,math.max(an,math.floor(al+0.5)))
+local an=math.max(aj.TextBounds.Y,aj.TextSize)
+local ao=am and(an+6)or 7
+ag.Size=UDim2.new(1,-7,0,math.max(ao,math.floor(al+0.5)))
 end
 
 local function updateLayout()
@@ -4608,8 +4631,13 @@ end
 aj.Visible=am
 aj.Text=am and tostring(ak._title)or""
 aj.TextXAlignment=ak._titleAlignment
+aj.TextWrapped=false
+aj.TextTruncate="AtEnd"
 
 if not am then
+aj.AutomaticSize="XY"
+aj.Size=UDim2.new(0,0,0,0)
+
 ah.Visible=true
 ai.Visible=false
 ah.AnchorPoint=Vector2.new(0,0.5)
@@ -4619,9 +4647,36 @@ return
 end
 
 local an=math.max(0,tonumber(ak._titleSpacing)or 0)
-local ao=ag.AbsoluteSize.X
+local ao=toLayoutOffset(ag.AbsoluteSize.X)
 local ap=aj.TextBounds.X
-local aq=math.max(ao-ap-(an*2),0)
+local aq=math.max(
+ao-(ak._titleAlignment=="Center"and an*2 or an),
+0
+)
+local ar=math.min(ap,aq)
+
+if ar<=0 then
+aj.Visible=false
+aj.AutomaticSize="XY"
+aj.Size=UDim2.new(0,0,0,0)
+ah.Visible=true
+ai.Visible=false
+ah.AnchorPoint=Vector2.new(0,0.5)
+ah.Position=UDim2.new(0,0,0.5,0)
+ah.Size=UDim2.new(1,0,0,al)
+return
+end
+
+aj.Visible=true
+if ar<ap then
+aj.AutomaticSize="None"
+aj.Size=UDim2.new(0,math.floor(ar+0.5),0,math.max(1,aj.TextBounds.Y))
+else
+aj.AutomaticSize="XY"
+aj.Size=UDim2.new(0,0,0,0)
+end
+
+local as=math.max(ao-ar-(an*2),0)
 
 ah.Visible=true
 ai.Visible=false
@@ -4631,8 +4686,8 @@ aj.AnchorPoint=Vector2.new(0,0.5)
 aj.Position=UDim2.new(0,0,0.5,0)
 
 ah.AnchorPoint=Vector2.new(0,0.5)
-ah.Position=UDim2.new(0,ap+an,0.5,0)
-ah.Size=UDim2.new(0,math.max(ao-ap-an,0),0,al)
+ah.Position=UDim2.new(0,ar+an,0.5,0)
+ah.Size=UDim2.new(0,math.max(ao-ar-an,0),0,al)
 return
 end
 
@@ -4642,25 +4697,25 @@ aj.Position=UDim2.new(1,0,0.5,0)
 
 ah.AnchorPoint=Vector2.new(0,0.5)
 ah.Position=UDim2.new(0,0,0.5,0)
-ah.Size=UDim2.new(0,math.max(ao-ap-an,0),0,al)
+ah.Size=UDim2.new(0,math.max(ao-ar-an,0),0,al)
 return
 end
 
-local ar=math.floor(aq/2)
-local as=math.max(aq-ar,0)
-local at=ar+an
+local at=math.floor(as/2)
+local au=math.max(as-at,0)
+local av=at+an
 
 aj.AnchorPoint=Vector2.new(0,0.5)
-aj.Position=UDim2.new(0,at,0.5,0)
+aj.Position=UDim2.new(0,av,0.5,0)
 
 ah.AnchorPoint=Vector2.new(0,0.5)
 ah.Position=UDim2.new(0,0,0.5,0)
-ah.Size=UDim2.new(0,ar,0,al)
+ah.Size=UDim2.new(0,at,0,al)
 
 ai.Visible=true
 ai.AnchorPoint=Vector2.new(0,0.5)
-ai.Position=UDim2.new(0,at+ap+an,0.5,0)
-ai.Size=UDim2.new(0,as,0,al)
+ai.Position=UDim2.new(0,av+ar+an,0.5,0)
+ai.Size=UDim2.new(0,au,0,al)
 end
 
 function ak.Title(al,am)
