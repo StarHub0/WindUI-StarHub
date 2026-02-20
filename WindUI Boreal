@@ -2981,19 +2981,6 @@ aA.Parent=az
 aA.Size=UDim2.new(0,0,0,42)
 aA.Position=UDim2.new(0,10,1,-10)
 aA.AnchorPoint=Vector2.new(0,1)
-end
-
-if ah.KeySystem.URL then
-ae("Get key","key",function()
-if ag then
-ag(ah.KeySystem.URL)
-else
-ah.WindUI:Notify{
-Title="Key System. Error",
-Content="Clipboard API is not available in this executor.",
-Icon="triangle-alert",
-}
-end
 end,"Secondary",ay.Frame)
 end
 
