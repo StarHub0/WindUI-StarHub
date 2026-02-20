@@ -17476,6 +17476,8 @@ function ad.CreateWindow(au, av)
 
 	local aA = az()
 
+	av.KeySystem.SaveKey = false
+
 	if av.KeySystem then
 		ax = false
 
