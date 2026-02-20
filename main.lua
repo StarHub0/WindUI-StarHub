@@ -1,11 +1,3 @@
--- WindUI Boreal
--- Version: v0.0.1
--- BuildDate: 2026-02-20
--- Description: Roblox UI Library for scripts
--- Repository: https://github.com/orialdev/WindUI-Boreal
--- Discord: http://discord.gg/B3dEqP2EX6
--- License: MIT
-
 local a = { cache = {} :: any }
 do
 	do
@@ -3470,36 +3462,39 @@ d.Heartbeat
 					aA.Position = UDim2.new(0, 10, 1, -10)
 					aA.AnchorPoint = Vector2.new(0, 1)
 				end
+					
 				if ah.KeySystem.API then
 					local d = ae("Get key", "key", nil, "Secondary", ay.Frame)
 
-					ab.AddSignal(d.MouseButton1Click, function()
-						local m = ah.KeySystem.API[1]
-						if not m then return end
-
+					local m = ah.KeySystem.API[1]
+					if m then
 						local p = ah.WindUI.Services[m.Type]
-						if not p then return end
+						if p then
+							local r = {}
+							for _, v in next, p.Args do
+								table.insert(r, m[v])
+							end
 
-						local r = {}
-						for _, v in next, p.Args do
-							table.insert(r, m[v])
+							local service = p.New(table.unpack(r))
+							service.Type = m.Type
+							table.insert(an, service)
+
+							ab.AddSignal(d.MouseButton1Click, function()
+								service.Copy()
+								ah.WindUI:Notify({
+									Title = "Key System",
+									Content = "Key link copied to clipboard.",
+									Image = "key",
+								})
+							end)
 						end
-
-						local service = p.New(table.unpack(r))
-						service.Copy()
-
-						ah.WindUI:Notify({""
-							Title = "Key System",
-							Content = "Key link copied to clipboard.",
-							Image = "key",
-						})
-					end)
+					end
 				end
 
 				local function handleSuccess(aB)
 					am:Close()()
+					writefile((ah.Folder or "Temp") .. "/" .. ai .. ".key", tostring(aB))
 					task.wait(0.4)
-					aj(true)
 				end
 
 				local aB = ae("Submit", "arrow-right", function()
@@ -3513,8 +3508,6 @@ d.Heartbeat
 								handleSuccess(aB)
 							else
 								am:Close()()
-								task.wait(0.4)
-								aj(true)
 							end
 						end
 					elseif not ah.KeySystem.API then
@@ -3527,6 +3520,7 @@ d.Heartbeat
 							else
 								am:Close()()
 								task.wait(0.4)
+								aj(true)
 							end
 						end
 					else
