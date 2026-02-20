@@ -3488,7 +3488,7 @@ d.Heartbeat
 						local service = p.New(table.unpack(r))
 						service.Copy()
 
-						ah.WindUI:Notify({
+						ah.WindUI:Notify({""
 							Title = "Key System",
 							Content = "Key link copied to clipboard.",
 							Image = "key",
@@ -3498,7 +3498,6 @@ d.Heartbeat
 
 				local function handleSuccess(aB)
 					am:Close()()
-					writefile((ah.Folder or "Temp") .. "/" .. ai .. ".key", tostring(aB))
 					task.wait(0.4)
 					aj(true)
 				end
@@ -3528,7 +3527,6 @@ d.Heartbeat
 							else
 								am:Close()()
 								task.wait(0.4)
-								aj(true)
 							end
 						end
 					else
