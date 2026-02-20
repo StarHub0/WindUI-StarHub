@@ -3470,176 +3470,29 @@ d.Heartbeat
 					aA.Position = UDim2.new(0, 10, 1, -10)
 					aA.AnchorPoint = Vector2.new(0, 1)
 				end
-
 				if ah.KeySystem.API then
-					local aB = 240
-					local b = false
 					local d = ae("Get key", "key", nil, "Secondary", ay.Frame)
 
-					local h = ab.NewRoundFrame(15, "Squircle", {
-						Size = UDim2.new(1, 0, 0, 0),
-						AutomaticSize = "Y",
-						ThemeTag = {
-							ImageColor3 = "Background",
-						},
-					}, {
-						ac("UIPadding", {
-							PaddingTop = UDim.new(0, 5),
-							PaddingLeft = UDim.new(0, 5),
-							PaddingRight = UDim.new(0, 5),
-							PaddingBottom = UDim.new(0, 5),
-						}),
-						ac("UIListLayout", {
-							FillDirection = "Vertical",
-							Padding = UDim.new(0, 5),
-						}),
-					})
-
-					local j = ac("Frame", {
-						BackgroundTransparency = 1,
-						Size = UDim2.new(0, aB, 0, 0),
-						ClipsDescendants = true,
-						AnchorPoint = Vector2.new(1, 0),
-						Parent = d,
-						Position = UDim2.new(1, 0, 1, 15),
-					}, {
-						h,
-					})
-
-					ac("TextLabel", {
-						Text = "Get key",
-						BackgroundTransparency = 1,
-						FontFace = Font.new(ab.Font, Enum.FontWeight.Medium),
-						ThemeTag = { TextColor3 = "Text" },
-						TextTransparency = 0.2,
-						TextSize = 16,
-						Size = UDim2.new(1, 0, 0, 0),
-						AutomaticSize = "Y",
-						TextWrapped = true,
-						TextXAlignment = "Left",
-						Parent = h,
-					}, {
-						ac("UIPadding", {
-							PaddingTop = UDim.new(0, 10),
-							PaddingLeft = UDim.new(0, 10),
-							PaddingRight = UDim.new(0, 10),
-							PaddingBottom = UDim.new(0, 10),
-						}),
-					})
-
-					local m = ah.KeySystem.API[1]
-					if m then
-						local p = ah.WindUI.Services[m.Type]
-						if p then
-							local r = {}
-							for u, v in next, p.Args do
-								table.insert(r, m[v])
-							end
-
-							local service = p.New(table.unpack(r))
-							service.Type = m.Type
-							table.insert(an, service)
-
-							local icon = m.Icon or p.Icon or "user"
-							local x = ab.Image(icon, icon, 0, "Temp", "KeySystem", true)
-							x.Size = UDim2.new(0, 24, 0, 24)
-
-							local z = ab.NewRoundFrame(10, "Squircle", {
-								Size = UDim2.new(1, 0, 0, 0),
-								ThemeTag = { ImageColor3 = "Text" },
-								ImageTransparency = 1,
-								Parent = h,
-								AutomaticSize = "Y",
-							}, {
-								ac("UIListLayout", {
-									FillDirection = "Horizontal",
-									Padding = UDim.new(0, 10),
-									VerticalAlignment = "Center",
-								}),
-								x,
-								ac("UIPadding", {
-									PaddingTop = UDim.new(0, 10),
-									PaddingLeft = UDim.new(0, 10),
-									PaddingRight = UDim.new(0, 10),
-									PaddingBottom = UDim.new(0, 10),
-								}),
-								ac("Frame", {
-									BackgroundTransparency = 1,
-									Size = UDim2.new(1, -34, 0, 0),
-									AutomaticSize = "Y",
-								}, {
-									ac("UIListLayout", {
-										FillDirection = "Vertical",
-										Padding = UDim.new(0, 5),
-										HorizontalAlignment = "Center",
-									}),
-									ac("TextLabel", {
-										Text = m.Title or p.Name,
-										BackgroundTransparency = 1,
-										FontFace = Font.new(ab.Font, Enum.FontWeight.Medium),
-										ThemeTag = { TextColor3 = "Text" },
-										TextTransparency = 0.05,
-										TextSize = 18,
-										Size = UDim2.new(1, 0, 0, 0),
-										AutomaticSize = "Y",
-										TextWrapped = true,
-										TextXAlignment = "Left",
-									}),
-									ac("TextLabel", {
-										Text = m.Desc or "",
-										BackgroundTransparency = 1,
-										FontFace = Font.new(ab.Font, Enum.FontWeight.Regular),
-										ThemeTag = { TextColor3 = "Text" },
-										TextTransparency = 0.2,
-										TextSize = 16,
-										Size = UDim2.new(1, 0, 0, 0),
-										AutomaticSize = "Y",
-										TextWrapped = true,
-										Visible = m.Desc and true or false,
-										TextXAlignment = "Left",
-									}),
-								}),
-							}, true)
-
-							ab.AddSignal(z.MouseEnter, function()
-								ad(z, 0.08, { ImageTransparency = 0.95 }):Play()
-							end)
-
-							ab.AddSignal(z.InputEnded, function()
-								ad(z, 0.08, { ImageTransparency = 1 }):Play()
-							end)
-
-							ab.AddSignal(z.MouseButton1Click, function()
-								service.Copy()
-								ah.WindUI:Notify({
-									Title = "Key System",
-									Content = "Key link copied to clipboard.",
-									Image = "key",
-								})
-							end)
-						end
-					end
-
-					-- abre/fecha (mantido, mas agora só existe um item)
 					ab.AddSignal(d.MouseButton1Click, function()
-						if not b then
-							ad(
-								j,
-								0.3,
-								{ Size = UDim2.new(0, aB, 0, h.AbsoluteSize.Y + 1) },
-								Enum.EasingStyle.Quint,
-								Enum.EasingDirection.Out
-							):Play()
-						else
-							ad(
-								j,
-								0.25,
-								{ Size = UDim2.new(0, aB, 0, 0) },
-								Enum.EasingStyle.Quint,
-								Enum.EasingDirection.Out
-							):Play()
+						local m = ah.KeySystem.API[1]
+						if not m then return end
+
+						local p = ah.WindUI.Services[m.Type]
+						if not p then return end
+
+						local r = {}
+						for _, v in next, p.Args do
+							table.insert(r, m[v])
 						end
-						b = not b
+
+						local service = p.New(table.unpack(r))
+						service.Copy()
+
+						ah.WindUI:Notify({
+							Title = "Key System",
+							Content = "Key link copied to clipboard.",
+							Image = "key",
+						})
 					end)
 				end
 
