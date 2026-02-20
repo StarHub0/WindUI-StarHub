@@ -4527,6 +4527,18 @@ return ae
 end
 
 function ac.New(ad,ae)
+local function getUIScale()
+local af=tonumber((ae.WindUI and ae.WindUI.UIScale)or ae.UIScale)or 1
+if af<=0 then
+return 1
+end
+return af
+end
+
+local function toLayoutOffset(af)
+return af/getUIScale()
+end
+
 local af=ae.Orientation
 if af~="Horizontal"and af~="Vertical"then
 af=ae.ParentType=="Group"and"Vertical"or"Horizontal"
@@ -4569,12 +4581,13 @@ ThemeTag=ao.ThemeTag,
 }),
 af=="Horizontal"and ab("TextLabel",{
 Name="Title",
-AutomaticSize="X",
+AutomaticSize="None",
 Size=UDim2.new(0,0,0,16),
 Position=UDim2.new(0.5,0,0.5,0),
 AnchorPoint=Vector2.new(0.5,0.5),
 Text=ag,
 TextSize=toNumber(ae.TitleSize,13,8),
+TextTruncate="AtEnd",
 BackgroundTransparency=1,
 Visible=ah,
 TextColor3=ap.TextColor3,
@@ -4651,60 +4664,76 @@ end
 as.Visible=false
 av.Visible=true
 
-local az=ar.AbsoluteSize.X
-local aA=av.AbsoluteSize.X
-local aB=aw.TitleSpacing
+local az=toLayoutOffset(ar.AbsoluteSize.X)
+local aA=math.max(az-(aw.TitleSpacing*2),0)
+local aB=toLayoutOffset(av.TextBounds.X)
+local b=math.min(aB,aA)
+local d=aw.TitleSpacing
+
+if aA<=0 or aB<=0 then
+as.Visible=true
+av.Visible=false
+at.Visible=false
+au.Visible=false
+return
+end
+
+av.Size=UDim2.new(0,math.max(0,math.floor(b+0.5)),0,av.Size.Y.Offset)
 
 if aw.TitleAlignment=="Left"then
 av.AnchorPoint=Vector2.new(0,0.5)
 av.Position=UDim2.new(0,0,0.5,0)
+av.TextXAlignment=Enum.TextXAlignment.Left
 
 at.Visible=false
 
-local b=math.floor(aA+aB)
-local d=math.max(0,az-b)
+local f=math.floor(b+d+0.5)
+local g=math.max(0,az-f)
 
 au.AnchorPoint=Vector2.new(0,0.5)
-au.Position=UDim2.new(0,b,0.5,0)
-au.Size=UDim2.new(0,d,0,ay)
-au.Visible=d>0
+au.Position=UDim2.new(0,f,0.5,0)
+au.Size=UDim2.new(0,g,0,ay)
+au.Visible=g>0
 return
 end
 
 if aw.TitleAlignment=="Right"then
 av.AnchorPoint=Vector2.new(1,0.5)
 av.Position=UDim2.new(1,0,0.5,0)
+av.TextXAlignment=Enum.TextXAlignment.Right
 
 au.Visible=false
 
-local b=math.max(0,az-(aA+aB))
+local f=math.max(0,az-math.floor(b+d+0.5))
 
 at.AnchorPoint=Vector2.new(0,0.5)
 at.Position=UDim2.new(0,0,0.5,0)
-at.Size=UDim2.new(0,b,0,ay)
-at.Visible=b>0
+at.Size=UDim2.new(0,f,0,ay)
+at.Visible=f>0
 return
 end
 
 av.AnchorPoint=Vector2.new(0.5,0.5)
 av.Position=UDim2.new(0.5,0,0.5,0)
+av.TextXAlignment=Enum.TextXAlignment.Center
 
-local b=math.max(0,math.floor((az-(aA+(aB*2)))/2))
+local f=math.max(0,math.floor((az-(b+(d*2)))/2+0.5))
 
 at.AnchorPoint=Vector2.new(0,0.5)
 at.Position=UDim2.new(0,0,0.5,0)
-at.Size=UDim2.new(0,b,0,ay)
-at.Visible=b>0
+at.Size=UDim2.new(0,f,0,ay)
+at.Visible=f>0
 
 au.AnchorPoint=Vector2.new(1,0.5)
 au.Position=UDim2.new(1,0,0.5,0)
-au.Size=UDim2.new(0,b,0,ay)
-au.Visible=b>0
+au.Size=UDim2.new(0,f,0,ay)
+au.Visible=f>0
 end
 
 if af=="Horizontal"then
 aa.AddSignal(ar:GetPropertyChangedSignal"AbsoluteSize",updateHorizontalLayout)
 aa.AddSignal(av:GetPropertyChangedSignal"AbsoluteSize",updateHorizontalLayout)
+aa.AddSignal(av:GetPropertyChangedSignal"TextBounds",updateHorizontalLayout)
 else
 as.Size=UDim2.new(0,aw.Thickness,1,0)
 end
@@ -10995,6 +11024,18 @@ and al.Tab.UIElements.ContainerFrame
 local au="__windui_multisection_scroll_lock_count"
 local av="__windui_multisection_scroll_lock_restore"
 
+local function GetUIScale()
+local aw=tonumber((al.WindUI and al.WindUI.UIScale)or al.UIScale)or 1
+if aw<=0 then
+return 1
+end
+return aw
+end
+
+local function ToLayoutOffset(aw)
+return aw/GetUIScale()
+end
+
 local aw=ad("Frame",{
 Size=UDim2.new(0,am.IconSize+10,0,am.IconSize+10),
 BackgroundTransparency=1,
@@ -11210,8 +11251,9 @@ Chevron=aA.ImageLabel,
 local f=d.Content.Tabs.Scroll.UIListLayout
 
 local function UpdateTitleSize()
-local g=aw.Visible and(aw.AbsoluteSize.X+am.HeaderGap)or 0
-local h=aB.AbsoluteSize.X>0 and(aB.AbsoluteSize.X+am.HeaderGap)or 0
+local g=aw.Visible and(ToLayoutOffset(aw.AbsoluteSize.X)+am.HeaderGap)or 0
+local h=aB.AbsoluteSize.X>0 and(ToLayoutOffset(aB.AbsoluteSize.X)+am.HeaderGap)
+or 0
 ax.Size=UDim2.new(1,-(g+h),0,0)
 end
 
@@ -11261,14 +11303,15 @@ local function UpdateTabsAlignment()
 local g=am.UIElements.Tabs
 local h=am.UIElements.TabsScroll
 
-local j=h.AbsoluteSize.X
-local l=f.AbsoluteContentSize.X
-local m=f.AbsoluteContentSize.Y
-local p=math.max(m,0)
+local j=math.max(0,math.floor(ToLayoutOffset(h.AbsoluteSize.X)+0.5))
+local l=math.max(0,math.floor(ToLayoutOffset(f.AbsoluteContentSize.X)+0.5))
+local m=math.max(0,math.floor(ToLayoutOffset(f.AbsoluteContentSize.Y)+0.5))
+local p=math.max(am.TabTextSize+(am.TabPaddingY*2),20)
+local r=(#am.Tabs>0)and math.max(math.ceil(m),p)or 0
 
-g.Size=UDim2.new(1,0,0,p)
-h.Size=UDim2.new(1,0,0,p)
-h.CanvasSize=UDim2.new(0,math.max(l,j),0,p)
+g.Size=UDim2.new(1,0,0,r)
+h.Size=UDim2.new(1,0,0,r)
+h.CanvasSize=UDim2.new(0,math.max(l,j),0,r)
 
 if j<=0 or l<=0 then
 ar=false
@@ -11289,11 +11332,11 @@ else
 f.HorizontalAlignment=Enum.HorizontalAlignment.Left
 h.ScrollingEnabled=true
 
-local r=math.max(h.AbsoluteCanvasSize.X-j,0)
-local u=math.clamp(h.CanvasPosition.X,0,r)
+local u=math.max(h.AbsoluteCanvasSize.X-h.AbsoluteSize.X,0)
+local v=math.clamp(h.CanvasPosition.X,0,u)
 
-if u~=h.CanvasPosition.X then
-h.CanvasPosition=Vector2.new(u,0)
+if v~=h.CanvasPosition.X then
+h.CanvasPosition=Vector2.new(v,0)
 end
 end
 
@@ -11301,7 +11344,7 @@ UpdateWindowScrollLock()
 end
 
 local function UpdateContentLayout()
-local g=d.Top.AbsoluteSize.Y/al.UIScale
+local g=d.Top.AbsoluteSize.Y/GetUIScale()
 d.Content.Position=UDim2.new(0,0,0,g)
 d.HeaderDivider.Position=UDim2.new(0.5,0,0,g)
 end
@@ -11356,7 +11399,7 @@ UpdateContentLayout()
 
 local h=d.Top.AbsoluteSize.Y
 local j=am.Opened and d.Content.AbsoluteSize.Y or 0
-local l=(h+j)/al.UIScale
+local l=(h+j)/GetUIScale()
 
 local m=UDim2.new(d.Size.X.Scale,d.Size.X.Offset,0,l)
 
