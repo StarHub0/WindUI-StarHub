@@ -18,15 +18,6 @@ local Window = WindUI:CreateWindow({
     },
 })
 
-Window:Divider({
-    Title = "Example",
-    TitleAlignment = "Left",
-    Thickness = 2,
-    TitleSpacing = 10,
-    Color = "#8EA1B5",
-    TitleColor = "Text",
-})
-
 Window:SideBarLabel({
     Title = "Example",
 })
@@ -210,24 +201,6 @@ Tab_MultiSection:Button({
 })
 
 Tab_MultiSection:Space({})
-
-local Tab_Divider = Window:Tab({
-    Title = "Divider",
-    Icon = "minus",
-})
-
-Tab_Divider:Space({})
-
-local Divider_Element = Tab_Divider:Divider({
-    Title = "Example",
-    TitleAlignment = "Center",
-    Thickness = 2,
-    TitleSpacing = 10,
-    Color = "#8EA1B5",
-    TitleColor = "Text",
-})
-
-Tab_Divider:Space({})
 
 local Tab_Video = Window:Tab({
     Title = "Video",
