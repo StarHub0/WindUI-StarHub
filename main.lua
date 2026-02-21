@@ -3520,7 +3520,6 @@ d.Heartbeat
 							else
 								am:Close()()
 								task.wait(0.4)
-								aj(true)
 							end
 						end
 					else
