@@ -3520,6 +3520,7 @@ d.Heartbeat
 							else
 								am:Close()()
 								task.wait(0.4)
+								aj(true)
 							end
 						end
 					else
@@ -12525,6 +12526,14 @@ workspace.CurrentCamera
 						am:SelectTab(j, true)
 					else
 						SetTabState(j, "Default", true)
+					end
+					
+
+					function j:SetTitle(text)
+						self.Title = text
+						if self.UIElements and self.UIElements.Title then
+							self.UIElements.Title.Text = text
+						end
 					end
 
 					SyncHeight(true)
