@@ -13252,7 +13252,7 @@ ar, as = ao:New(aq)
 			end)
 
 			aa(game:GetService("UserInputService"))
-			local ad = game.Players.LocalPlayer:GetMouse()
+			local ad = game:GetService("Players").LocalPlayer:GetMouse()
 
 			local ae = a.c()
 			local af = ae.New
@@ -17058,7 +17058,7 @@ local ap = a.r()
 
 local aq = protectgui or (syn and syn.protect_gui) or function() end
 
-local ar = gethui and gethui() or (ag or game.Players.LocalPlayer:WaitForChild("PlayerGui"))
+local ar = gethui and gethui() or (ag or game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
 
 local as = an("UIScale", {
 	Scale = ad.UIScale,
